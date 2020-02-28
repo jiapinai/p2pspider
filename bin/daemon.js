@@ -5,7 +5,7 @@
  */
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
-const mongoDB = 'mongodb://127.0.0.1/magnetdb';
+const mongoDB = 'mongodb://mongo:27017/magnetdb';
 mongoose.connection.openUri(mongoDB);
 const db = mongoose.connection;
 
@@ -16,11 +16,11 @@ db.once('open', () => { console.log('MongoDB has connected.'); });
  * Mongoose Schema
  */
 const magnetSchema = mongoose.Schema({
-  name: {type: String, index: true},
-  infohash: {type: String, index: true},
-  magnet: String,
-  files: String,
-  fetchedAt: Number
+    name: { type: String, index: true },
+    infohash: { type: String, index: true },
+    magnet: String,
+    files: String,
+    fetchedAt: Number
 });
 
 /**
@@ -32,7 +32,7 @@ const Magnet = mongoose.model('Magnet', magnetSchema, "magnetdb");
  * Redis
  */
 const redis = require("redis")
-const client = redis.createClient();
+const client = redis.createClient({ host: 'redis' });
 
 // Log redis errors if any.
 client.on("error", (err) => {
@@ -78,7 +78,7 @@ p2p.on('metadata', (metadata, rinfo) => {
     data.files = 1;
 
     let fixfiles = new Array();
-    if(metadata.info.files) {
+    if (metadata.info.files) {
         let files = metadata.info.files;
         files.forEach((item) => {
             fixfiles.push(item.path);
@@ -99,10 +99,10 @@ p2p.on('metadata', (metadata, rinfo) => {
     });
 
     // Insert infohash to redis and to expire.
-    client.set('hashes:'+ magnet.infohash, magnet.infohash, 'EX', 60 * 60 * 24);
+    client.set('hashes:' + magnet.infohash, magnet.infohash, 'EX', 60 * 60 * 24);
 
     // Check if it is already in the DB.
-    Magnet.find({infohash : magnet.infohash}, (err, result) => {
+    Magnet.find({ infohash: magnet.infohash }, (err, result) => {
         if (!result.length) {
             // Save the model to DB.
             magnet.save((err) => {
