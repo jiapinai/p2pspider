@@ -33,7 +33,7 @@ const trackers = () => {
  */
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
-const mongoDB = 'mongodb://mongo:27017/magnetdb';
+const mongoDB = 'mongodb://mongodb-service:27017/magnetdb';
 mongoose.connection.openUri(mongoDB);
 const db = mongoose.connection;
 
